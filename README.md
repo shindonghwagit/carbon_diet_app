@@ -5,7 +5,7 @@
 
 
 ##  사용 기술
-- Frontend: Flutter (Dart)
+- Frontend: Flutter 
 - Backend: Spring Boot (Java)
 - Database: PostgreSQL 
 
