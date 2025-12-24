@@ -19,17 +19,46 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CD',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+   return MaterialApp(
+  debugShowCheckedModeBanner: false,
+  theme: ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2E7D32)),
+    scaffoldBackgroundColor: const Color(0xFFF6F7F8),
+    appBarTheme: const AppBarTheme(
+      centerTitle: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+    ),
+    tabBarTheme: const TabBarThemeData(
+    labelColor: Color(0xFF2E7D32),
+    unselectedLabelColor: Colors.grey,
+    indicatorSize: TabBarIndicatorSize.tab,
+    ),
 
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: Color(0xFF2E7D32),
+      foregroundColor: Colors.white,
+      shape: CircleBorder(),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
       ),
-      //  변경된 부분: 앱 시작을 'SplashScreen'으로 설정
-      home: const SplashScreen(),
-    );
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+      ),
+    ),
+  ),
+  home: const SplashScreen(),
+);
+
   }
 }
 
@@ -349,6 +378,9 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  DateTime _selectedDay = DateTime.now();
+  DateTime _focusedDay = DateTime.now();
+
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
@@ -365,25 +397,32 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   // + 버튼 누르면 나오는 '통합 기록장'
-  void _showRecordModal() {
+  void _showRecordModal(DateTime date) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: SizedBox(
-            height: 600, // 높이를 조금 더 넉넉하게
-            child: const RecordBottomSheet(), // 새로 만든 통합 위젯
+            height: 600,
+            // 2. [전달] 받은 날짜를 BottomSheet에 넘김
+            child: RecordBottomSheet(selectedDate: date), 
           ),
         );
       },
     );
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = focusedDay;
+    });
+
+    // 바로 여기서 클릭한 날짜를 넣어서 실행!
+    _showRecordModal(selectedDay); 
   }
 
   @override
@@ -391,7 +430,11 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: _screens[_selectedIndex],
       floatingActionButton: FloatingActionButton(
-        onPressed: _showRecordModal,
+        onPressed:  () {
+          // 오늘 날짜로 기록장 열기
+          DateTime today = DateTime.now();
+          _showRecordModal(today);
+        },
         backgroundColor: Colors.green,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 30),
@@ -434,22 +477,21 @@ class _MainScreenState extends State<MainScreen> {
 
 //  통합 기록 시트 (전기 / 교통 / 식사 탭 포함)
 class RecordBottomSheet extends StatelessWidget {
-  const RecordBottomSheet({super.key});
+  // 1. [추가] 날짜를 받는 변수
+  final DateTime selectedDate; 
+
+  // 2. [추가] 생성자 수정
+  const RecordBottomSheet({super.key, required this.selectedDate});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3, // 탭 3개
+      length: 3,
       child: Column(
         children: [
           const SizedBox(height: 10),
-          // 손잡이 디자인
-          Container(
-            width: 40, height: 5,
-            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
-          ),
+          Container(width: 40, height: 5, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10))),
           const SizedBox(height: 10),
-          // 2. 상단 탭 메뉴
           const TabBar(
             tabs: [
               Tab(text: " 전기", icon: Icon(Icons.bolt)),
@@ -457,13 +499,12 @@ class RecordBottomSheet extends StatelessWidget {
               Tab(text: " 식사", icon: Icon(Icons.restaurant)),
             ],
           ),
-          // 3. 탭별 내용물
-          const Expanded(
+          Expanded(
             child: TabBarView(
               children: [
-                ElectricityInput(), // 기존 전기 계산기
-                TransportInput(),   //  교통 입력
-                FoodInput(),        //  식사 입력
+                ElectricityInput(initialDate: selectedDate), // ⚡ 전기도 날짜 넘기기
+                TransportInput(initialDate: selectedDate),   // 🚌 교통도 날짜 넘기기
+                FoodInput(initialDate: selectedDate),        // 🍱 식사도 날짜 넘기기
               ],
             ),
           ),
@@ -475,7 +516,14 @@ class RecordBottomSheet extends StatelessWidget {
 
 //  1. 전기 입력 화면 
 class ElectricityInput extends StatefulWidget {
-  const ElectricityInput({super.key});
+  final DateTime initialDate; // 1. 날짜 받기
+  final bool isReadOnly;      // 2. 고정 모드 받기
+
+  const ElectricityInput({
+    super.key,
+    required this.initialDate,
+    this.isReadOnly = false,
+  });
 
   @override
   State<ElectricityInput> createState() => _ElectricityInputState();
@@ -483,6 +531,13 @@ class ElectricityInput extends StatefulWidget {
 
 class _ElectricityInputState extends State<ElectricityInput> {
   final TextEditingController _controller = TextEditingController();
+  late DateTime _selectedDate; // 3. 내 변수 준비
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate; // 4. 받아온 날짜로 초기화
+  }
 
   Future<void> calculateUsage() async {
     String money = _controller.text;
@@ -491,21 +546,20 @@ class _ElectricityInputState extends State<ElectricityInput> {
     final prefs = await SharedPreferences.getInstance();
     String myId = prefs.getString('userid') ?? "unknown";
 
-    // 전송할 URL
-    final url = Uri.parse('http://10.0.2.2:8080/api/elec?money=$money&username=$myId');
+    // 5. 날짜 포함해서 전송 (yyyy-MM-dd)
+    String dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2,'0')}-${_selectedDate.day.toString().padLeft(2,'0')}";
+    
+    // URL에 &date=$dateStr 추가
+    final url = Uri.parse('http://10.0.2.2:8080/api/elec?money=$money&username=$myId&date=$dateStr');
     
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         if (mounted) {
-          _controller.clear();      
+          _controller.clear();       
           Navigator.of(context).pop(); 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("전기요금 기록이 저장되었습니다."),
-              backgroundColor: Colors.blue,
-              duration: Duration(seconds: 1),
-            ),
+            const SnackBar(content: Text("전기요금 기록 저장 완료!"), backgroundColor: Colors.blue),
           );
         }
       }
@@ -520,16 +574,20 @@ class _ElectricityInputState extends State<ElectricityInput> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          const Text(
-            "이번 달 전기요금은?",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          const Text("이번 달 전기요금은?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           
+          // 6. 달력에서 왔으면 날짜 보여주기 (수정은 불가)
+          if (widget.isReadOnly) 
+            Text("날짜: ${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}", 
+              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            
+          const SizedBox(height: 10),
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.grey[100], // 연한 회색 배경
+              color: Colors.grey[100],
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.grey.shade300),
             ),
@@ -537,40 +595,23 @@ class _ElectricityInputState extends State<ElectricityInput> {
               controller: _controller,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(
-                icon: Icon(Icons.flash_on, color: Colors.amber), // 번개 아이콘
-                border: InputBorder.none, // 밑줄 제거
+                icon: Icon(Icons.flash_on, color: Colors.amber),
+                border: InputBorder.none,
                 hintText: "요금을 입력하세요 (원)",
                 suffixText: "원",
               ),
             ),
           ),
-      
           const SizedBox(height: 20),
           
           SizedBox(
-            width: double.infinity, // 가로 꽉 채우기
+            width: double.infinity,
             height: 50,
             child: ElevatedButton(
               onPressed: calculateUsage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent, // 시원한 파란색
-                foregroundColor: Colors.white, // 글씨는 흰색
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25), // 둥근 모서리
-                ),
-              ),
-              child: const Text(
-                "전기요금 기록 저장", 
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
+              child: const Text("전기요금 기록 저장", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
-          ),
-          
-          const SizedBox(height: 10),
-          const Text(
-            "관리비 고지서의 '전기요금' 항목을 입력하세요.",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),
@@ -579,8 +620,16 @@ class _ElectricityInputState extends State<ElectricityInput> {
 }
 
 //  2. 교통 입력 화면 
+// 2. 교통 입력 화면 (수정됨 ✨)
 class TransportInput extends StatefulWidget {
-  const TransportInput({super.key});
+  final DateTime initialDate; // 1. 날짜 받기
+  final bool isReadOnly;      // 2. 고정 모드 받기
+
+  const TransportInput({
+    super.key,
+    required this.initialDate,
+    this.isReadOnly = false,
+  });
 
   @override
   State<TransportInput> createState() => _TransportInputState();
@@ -589,24 +638,27 @@ class TransportInput extends StatefulWidget {
 class _TransportInputState extends State<TransportInput> {
   final TextEditingController _controller = TextEditingController();
   String _selectedTransport = "버스";
-  
-  // [위치 1] 날짜 저장을 위한 변수 추가 (클래스 맨 위)
-  DateTime _selectedDate = DateTime.now(); 
+  late DateTime _selectedDate; // 3. 내 변수
 
-  // [위치 2] 날짜 선택 팝업을 띄우는 함수 추가
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate; // 4. 초기화
+  }
+
+  // 날짜 선택 팝업
   Future<void> _pickDate() async {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(), // 미래 날짜 선택 불가
+      lastDate: DateTime.now(),
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);
     }
   }
 
-  // [위치 3] 전송 함수 수정 (날짜 포맷팅 및 URL 파라미터 추가)
   Future<void> calculateUsage() async {
     String km = _controller.text;
     if (km.isEmpty) return;
@@ -614,30 +666,22 @@ class _TransportInputState extends State<TransportInput> {
     final prefs = await SharedPreferences.getInstance();
     String myId = prefs.getString('userid') ?? "unknown";
 
-    // 날짜를 "2025-12-25" 문자열로 변환
     String dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2,'0')}-${_selectedDate.day.toString().padLeft(2,'0')}";
 
-    // URL 끝에 &date=... 추가
     final url = Uri.parse('http://10.0.2.2:8080/api/trans?type=$_selectedTransport&km=$km&username=$myId&date=$dateStr');
 
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         if (mounted) {
-          _controller.clear();      
+          _controller.clear();       
           Navigator.of(context).pop(); 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("교통 기록이 저장되었습니다."),
-              backgroundColor: Colors.blue,
-              duration: Duration(seconds: 1),
-            ),
+            const SnackBar(content: Text("교통 기록 저장 완료!"), backgroundColor: Colors.blue),
           );
         }
       }
-    } catch (e) {
-      print("에러: $e");
-    }
+    } catch (e) { print("에러: $e"); }
   }
 
   @override
@@ -646,37 +690,28 @@ class _TransportInputState extends State<TransportInput> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          const Text(
-            "오늘의 이동 수단은?",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          const Text("오늘의 이동 수단은?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
 
-          // [위치 4] 날짜 선택 버튼 (제목 바로 아래에 배치)
-          GestureDetector(
-             onTap: _pickDate,
-             child: Container(
-               margin: const EdgeInsets.only(bottom: 20),
-               padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-               decoration: BoxDecoration(
-                 border: Border.all(color: Colors.grey.shade300),
-                 borderRadius: BorderRadius.circular(10),
-                 color: Colors.white,
-               ),
-               child: Row(
-                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                   Text(
-                     "날짜: ${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}",
-                     style: const TextStyle(fontSize: 16),
-                   ),
-                   const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
-                 ],
-               ),
-             ),
-           ),
+          // 5. [핵심] isReadOnly가 아닐 때만(false일 때만) 날짜 선택 버튼 보여주기!
+          if (!widget.isReadOnly) ...[
+            GestureDetector(
+              onTap: _pickDate,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(10), color: Colors.white),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("날짜: ${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}", style: const TextStyle(fontSize: 16)),
+                    const Icon(Icons.calendar_today, size: 18, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+          ],
 
-          // (아래는 기존의 교통 수단 선택 버튼들)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: ["버스", "지하철", "택시", "자차"].map((type) {
@@ -684,46 +719,27 @@ class _TransportInputState extends State<TransportInput> {
                 label: Text(type),
                 selected: _selectedTransport == type,
                 selectedColor: Colors.green.shade200,
-                onSelected: (selected) {
-                  if (selected) setState(() => _selectedTransport = type);
-                },
+                onSelected: (selected) { if (selected) setState(() => _selectedTransport = type); },
               );
             }).toList(),
           ),
-          
           const SizedBox(height: 20),
           
-          // (기존 입력창)
           TextField(
             controller: _controller,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.timer),
-              labelText: "이동 거리 (km)",
-              border: OutlineInputBorder(),
-            ),
+            decoration: const InputDecoration(prefixIcon: Icon(Icons.timer), labelText: "이동 거리 (km)", border: OutlineInputBorder()),
           ),
-          
           const SizedBox(height: 20),
           
-          // (기존 저장 버튼)
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
               onPressed: calculateUsage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
-                foregroundColor: Colors.white,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
               child: const Text("이동 기록 저장", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-          ),
-          
-          const SizedBox(height: 10),
-          const Text(
-            "이동 수단을 선택하고 거리를 입력하세요.",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),
@@ -733,7 +749,10 @@ class _TransportInputState extends State<TransportInput> {
 
 // 3. 식사 입력 화면 (수정 완료)
 class FoodInput extends StatefulWidget {
-  const FoodInput({super.key});
+  final DateTime initialDate; 
+
+  // 2. [수정] 생성자에서 initialDate를 필수로 받음
+  const FoodInput({super.key, required this.initialDate});
 
   @override
   State<FoodInput> createState() => _FoodInputState();
@@ -744,7 +763,14 @@ class _FoodInputState extends State<FoodInput> {
   String _selectedFood = "소고기"; // 변수명 확인!
 
   // [위치 1] 날짜 변수 추가
-  DateTime _selectedDate = DateTime.now(); 
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    // 4. [수정] 받아온 날짜(widget.initialDate)로 초기화!
+    _selectedDate = widget.initialDate; 
+  }
 
   // [위치 2] 날짜 선택 함수 추가
   Future<void> _pickDate() async {
@@ -1195,7 +1221,6 @@ class _StatScreenState extends State<StatScreen> {
   }
 
   // 서버에서 데이터 가져와서 달력에 맞게 가공하기
-  // 서버에서 데이터 가져와서 달력에 맞게 가공하기
   Future<void> _fetchLogs() async {
     // 1. 내 아이디 가져오기 (로그인할 때 저장한 것)
     final prefs = await SharedPreferences.getInstance();
@@ -1284,6 +1309,26 @@ class _StatScreenState extends State<StatScreen> {
     return total / count; // (총 배출량 / 기록된 날짜 수)
   }
 
+  void _showRecordModal(DateTime date) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: SizedBox(
+            height: 600,
+            // RecordBottomSheet에 날짜 전달
+            child: RecordBottomSheet(selectedDate: date), 
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 선택된 날짜의 목록
@@ -1314,7 +1359,7 @@ class _StatScreenState extends State<StatScreen> {
                   ),
                 ),
 
-                // 2. 달력 (TableCalendar)
+                // 2. 달력 
                 TableCalendar(
                   locale: 'ko_KR',
                   firstDay: DateTime.utc(2020, 1, 1),
@@ -1326,10 +1371,10 @@ class _StatScreenState extends State<StatScreen> {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
                     });
+                    _showRecordModal(selectedDay);
                   },
-                  eventLoader: _getEventsForDay,
                   
-                  // 👇 여기가 핵심! 달력 스타일 커스텀
+                  //  여기가 핵심! 달력 스타일 커스텀
                   calendarStyle: const CalendarStyle(
                     outsideDaysVisible: false, // 이번 달 아닌 날짜 숨김
                     todayDecoration: BoxDecoration(
@@ -1342,7 +1387,7 @@ class _StatScreenState extends State<StatScreen> {
                     ),
                   ),
 
-                  // 👇 점(Marker)을 내 맘대로 그리는 기능
+                  //  점(Marker)을 내 맘대로 그리는 기능
                   calendarBuilders: CalendarBuilders(
                     markerBuilder: (context, date, events) {
                       if (events.isEmpty) return const SizedBox();
@@ -1357,11 +1402,11 @@ class _StatScreenState extends State<StatScreen> {
                       }
 
                       // 2. 배출량에 따라 점 색깔 결정 (기준은 원하시는 대로 수정 가능!)
-                      Color dotColor = Colors.green; // 기본: 착함 🌱
+                      Color dotColor = Colors.green; // 기본: 착함 
                       if (dailyTotal > 10.0) {
-                        dotColor = Colors.redAccent; // 위험 🚨
+                        dotColor = Colors.redAccent; // 위험 
                       } else if (dailyTotal > 5.0) {
-                        dotColor = Colors.orange; // 주의 ⚠️
+                        dotColor = Colors.orange; // 주의 
                       }
 
                       // 3. 딱 하나의 점만 리턴
@@ -1675,19 +1720,19 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  // 3. 도움말 팝업 (새로 추가됨 ✨)
+  // 3. 도움말 팝업 (새로 추가됨)
   void _showHelp() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("도움말 💡"),
+        title: const Text("도움말"),
         content: const SingleChildScrollView(
           child: Text(
             "탄소 발자국 줄이기 앱 사용법\n\n"
             "1. 홈 화면에서 '+' 버튼을 눌러 나의 탄소 배출 활동(전기, 교통, 식사)을 기록하세요.\n\n"
             "2. '나의 환경 점수'를 통해 이번 달 배출량을 확인하고 목표를 지켜보세요.\n\n"
             "3. 그래프를 통해 최근 7일간의 습관을 분석할 수 있습니다.\n\n"
-            "작은 실천이 모여 지구를 지킵니다! 🌱",
+            "작은 실천이 모여 지구를 지킵니다!",
             style: TextStyle(height: 1.5),
           ),
         ),
@@ -1701,7 +1746,7 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  // 4. 회원 탈퇴 (데이터 초기화 대체 ✨)
+  // 4. 회원 탈퇴 
   Future<void> _deleteAccount() async {
     bool? confirm = await showDialog(
       context: context,
@@ -1763,7 +1808,7 @@ class _SettingScreenState extends State<SettingScreen> {
           children: [
             const SizedBox(height: 20),
             
-            // 1️⃣ 프로필 카드
+            // 1️ 프로필 카드
             GestureDetector(
               onTap: _editProfile,
               child: Container(
@@ -1803,7 +1848,7 @@ class _SettingScreenState extends State<SettingScreen> {
             
             const SizedBox(height: 30),
 
-            // 2️⃣ 목표 관리
+            // 2️ 목표 관리
             _buildSectionHeader("목표 관리"),
             Container(
               color: Colors.white,
@@ -1823,7 +1868,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
             const SizedBox(height: 30),
 
-            // 3️⃣ 일반 설정
+            // 3️ 일반 설정
             _buildSectionHeader("일반"),
             Container(
               color: Colors.white,
@@ -1919,7 +1964,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // 💡 ListView 대신 가벼운 Row를 사용해서 Layout 충돌 방지!
+    // ListView 대신 가벼운 Row를 사용해서 Layout 충돌 방지!
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       title: const Center(child: Text("프로필 수정", style: TextStyle(fontWeight: FontWeight.bold))),
@@ -1929,7 +1974,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
           children: [
             const SizedBox(height: 10),
             
-            // 🎨 아바타 선택 영역 (ListView 제거 -> SingleChildScrollView + Row 변경)
+            // 아바타 선택 영역 (ListView 제거 -> SingleChildScrollView + Row 변경)
             SingleChildScrollView(
               scrollDirection: Axis.horizontal, // 가로 스크롤 허용
               child: Row(
@@ -1960,7 +2005,7 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
             
             const SizedBox(height: 25),
             
-            // 📝 닉네임 입력창
+            //  닉네임 입력창
             TextField(
               controller: _controller,
               decoration: const InputDecoration(
