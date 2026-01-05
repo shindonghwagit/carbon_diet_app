@@ -68,12 +68,12 @@ public class CarbonService {
         carbonLogRepository.save(log);
     }
 
-    //  조회 함수 (내 것만 가져오기)
+    //  조회 함수
     public List<CarbonLog> getLogsByUsername(String username) {
         return carbonLogRepository.findByUsername(username);
     }
 
-    //  데이터 전체 삭제 (초기화)
+    //  데이터 전체 삭제
     public void deleteAllLogs() {
         carbonLogRepository.deleteAll();
     }
@@ -85,13 +85,10 @@ public class CarbonService {
         // 1. 기본 정보로 장부 만들기
         CarbonLog log = new CarbonLog(category, type, input, rounded, username);
 
-        // 2. 날짜 지정 로직 (핵심!)
-        // 날짜가 들어왔으면 그걸로 바꾸고, 안 들어왔으면 그냥 둠(오늘 날짜)
+        // 2. 날짜 지정
         if (date != null && !date.isEmpty() && !date.equals("null")) {
             try {
-                // 문자열 "2025-05-05" -> 날짜 객체로 변환
                 java.time.LocalDate localDate = java.time.LocalDate.parse(date);
-                // 그 날짜의 00시 00분 00초로 설정
                 log.setCreatedAt(localDate.atStartOfDay());
             } catch (Exception e) {
                 System.out.println("날짜 변환 실패: " + e.getMessage());

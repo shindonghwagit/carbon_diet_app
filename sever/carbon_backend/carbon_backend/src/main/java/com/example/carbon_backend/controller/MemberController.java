@@ -38,7 +38,7 @@ public class MemberController {
     @DeleteMapping("/{username}")
     public ResponseEntity<String> deleteUser(@PathVariable String username) {
 
-        memberService.deleteMember(username); // 👈 여기서 서비스 호출!
+        memberService.deleteMember(username);
 
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
@@ -85,7 +85,7 @@ public class MemberController {
             return "FAIL:현재 비밀번호가 틀렸습니다.";
         }
 
-        // 3. 새 비밀번호로 변경 (암호화 필수!)
+        // 3. 새 비밀번호로 변경
         String encryptedNewPw = PasswordEncoder.encrypt(newPw);
         member.setPassword(encryptedNewPw);
         memberRepository.save(member);

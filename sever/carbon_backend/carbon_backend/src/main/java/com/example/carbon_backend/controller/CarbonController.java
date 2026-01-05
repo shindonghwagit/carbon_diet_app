@@ -37,13 +37,12 @@ public class CarbonController {
     }
 
     //  전체 기록 조회:
-    //  기록 목록 조회 API
     @GetMapping("/api/logs")
     public List<CarbonLog> getLogs(@RequestParam String username) {
         return carbonService.getLogsByUsername(username);
     }
 
-    // (옵션) 초기화 기능
+    // 초기화 기능
     @DeleteMapping("/api/reset")
     public String resetData() {
         carbonService.deleteAllLogs();

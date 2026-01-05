@@ -1,0 +1,15 @@
+# secrets
+.env
+.env.*
+!.env.example
+.env.properties
+
+# IDE
+.idea/
+.vscode/
+**/*.iml
+
+# build outputs
+**/build/
+**/.gradle/
+**/.dart_tool/
