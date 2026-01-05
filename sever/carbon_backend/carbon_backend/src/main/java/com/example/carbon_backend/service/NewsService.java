@@ -5,11 +5,20 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
 public class NewsService {
+
+    @Value("${oauth.client-id}")
+    private String clientId;
+
+    @Value("${oauth.client-secret}")
+    private String clientSecret;
+
     private final String CLIENT_ID = "8YFu74XJauhbvCQs4fK3";
     private final String CLIENT_SECRET = "z6M1vQ40lV";
 
