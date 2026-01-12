@@ -71,8 +71,53 @@
 - 타이머를 통한 자동 목록 새로고침
 - 기사 클릭 시 원문 웹페이지로 이동
 
+<<<<<<< HEAD
 5.6 설정 화면
 - 프로필 카드: 현재 아바타 및 닉네임 확인/수정
 - 목표 관리: 슬라이더를 이용한 하루 탄소 한도 설정
 - 계정 관리: 아이디 변경, 비밀번호 변경 
 - 일반: 도움말 확인, 로그아웃, 회원 탈퇴
+=======
+설정 화면
+- 사용자 정보 수정
+- 앱 환경 설정
+
+
+## 📁 디렉토리 구조
+
+### Frontend (Flutter)
+📦lib
+ ┣ 📂screens
+ ┃ ┣ 📂auth
+ ┃ ┃ ┣ 📜find_account_screen.dart
+ ┃ ┃ ┣ 📜login_screen.dart
+ ┃ ┃ ┗ 📜signup_screen.dart
+ ┃ ┣ 📂main
+ ┃ ┃ ┣ 📜home_screen.dart
+ ┃ ┃ ┣ 📜news_screen.dart
+ ┃ ┃ ┣ 📜setting_screen.dart
+ ┃ ┃ ┗ 📜stat_screen.dart
+ ┃ ┣ 📜main_screen.dart
+ ┃ ┗ 📜splash_screen.dart
+ ┣ 📂widgets
+ ┗ 📜main.dart
+ 
+📁 디렉토리 구조 (Backend)
+📦src
+ ┣ 📂main
+ ┃ ┣ 📂java
+ ┃ ┃ ┗ 📂com.example.carbon_backend
+ ┃ ┃ ┃ ┣ 📂controller
+ ┃ ┃ ┃ ┃ ┣ 📜MemberController.java
+ ┃ ┃ ┃ ┃ ┗ 📜NewsController.java
+ ┃ ┃ ┃ ┣ 📂domain
+ ┃ ┃ ┃ ┃ ┗ 📜Member.java
+ ┃ ┃ ┃ ┣ 📂repository
+ ┃ ┃ ┃ ┃ ┗ 📜MemberRepository.java
+ ┃ ┃ ┃ ┣ 📂service
+ ┃ ┃ ┃ ┃ ┣ 📜MemberService.java
+ ┃ ┃ ┃ ┃ ┗ 📜NewsService.java
+ ┃ ┃ ┃ ┗ 📜CarbonBackendApplication.java
+ ┃ ┗ 📂resources
+ ┃ ┃ ┗ 📜application.properties
+>>>>>>> 7789e63576ff92073dfc0b43af82548688e4c67c
