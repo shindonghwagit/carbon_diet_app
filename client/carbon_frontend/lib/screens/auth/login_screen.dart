@@ -4,12 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:lottie/lottie.dart';
 
-import '../main_screen.dart'; // 메인 화면
-import 'signup_screen.dart'; // 회원가입
+import '../main_screen.dart';
+import 'signup_screen.dart';
 import 'find_account_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  static String loggedInId = "";
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -33,16 +35,17 @@ class _LoginScreenState extends State<LoginScreen> {
         String result = utf8.decode(response.bodyBytes);
 
         if (result.startsWith("SUCCESS")) {
-          //  서버에서 온 응답 예시 -> "SUCCESS:지구용사"
-          String realNickname = result.split(":")[1]; // "지구용사"만 추출
+          String realNickname = result.split(":")[1];
 
-          // 휴대폰에 닉네임 저장 (이 부분이 추가되었습니다!)
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('nickname', realNickname);
-
           await prefs.setString('userId', _idController.text);
 
-          print("로그인 성공! 저장된 아이디: ${_idController.text}, 닉네임: $realNickname");
+          LoginScreen.loggedInId = _idController.text;
+
+          print("로그인 성공!");
+          print("저장된 아이디(전역변수): ${LoginScreen.loggedInId}");
+          print("저장된 닉네임: $realNickname");
 
           if (mounted) {
             Navigator.pushReplacement(
@@ -51,7 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         } else {
-          // 실패 메시지 (FAIL:...)
           _showError(result.split(":")[1]);
         }
       }

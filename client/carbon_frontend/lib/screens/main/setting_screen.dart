@@ -98,8 +98,81 @@ class _SettingScreenState extends State<SettingScreen> {
     return false;
   }
 
+  //  아이디 변경 팝업 띄우기
+  void _showIdChangeDialog() {
+    final idController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("아이디 변경"),
+        content: TextField(
+          controller: idController,
+          decoration: const InputDecoration(
+            labelText: "새로운 아이디",
+            hintText: "변경할 아이디를 입력하세요",
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("취소", style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newId = idController.text;
+              if (newId.isEmpty) return;
+
+              try {
+                // 백엔드 요청 (MemberController의 @RequestParam 방식)
+                final response = await http.put(
+                  Uri.parse("http://10.0.2.2:8080/api/member/change-id"),
+                  body: {"currentId": LoginScreen.loggedInId, "newId": newId},
+                );
+
+                if (response.statusCode == 200) {
+                  final result = response.body;
+
+                  if (result.startsWith("SUCCESS")) {
+                    if (!mounted) return;
+                    Navigator.pop(context); // 팝업 닫기
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("아이디가 변경되었습니다. 다시 로그인해주세요."),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  } else {
+                    if (!mounted) return;
+                    // 실패 메시지 (예: 이미 존재하는 아이디)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result.split(":")[1])),
+                    );
+                  }
+                }
+              } catch (e) {
+                print("에러: $e");
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            child: const Text("변경", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   //  비밀번호 변경 팝업 띄우기
-  void _showPasswordChangeDialog() {
+  void _showPasswordChangedDialog() {
     final currentPwCtrl = TextEditingController();
     final newPwCtrl = TextEditingController();
     final confirmPwCtrl = TextEditingController();
@@ -133,48 +206,60 @@ class _SettingScreenState extends State<SettingScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("취소"),
+            child: const Text("취소", style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () async {
-              // 1. 입력값 검사
               if (newPwCtrl.text != confirmPwCtrl.text) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("새 비밀번호가 서로 다릅니다.")),
+                  const SnackBar(content: Text("새 비밀번호가 일치하지 않습니다.")),
                 );
                 return;
               }
-              if (currentPwCtrl.text.isEmpty || newPwCtrl.text.isEmpty) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text("빈칸을 채워주세요.")));
-                return;
-              }
 
-              // 2. 서버로 요청 보내기
-              bool success = await _changePasswordApi(
-                currentPwCtrl.text,
-                newPwCtrl.text,
-              );
+              try {
+                final response = await http.put(
+                  Uri.parse("http://10.0.2.2:8080/api/member/password"),
+                  body: {
+                    "id": LoginScreen.loggedInId,
+                    "currentPw": currentPwCtrl.text,
+                    "newPw": newPwCtrl.text,
+                  },
+                );
 
-              if (mounted) {
-                if (success) {
-                  Navigator.pop(context); // 창 닫기
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("비밀번호가 변경되었습니다.")),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("현재 비밀번호가 틀렸거나 오류가 발생했습니다.")),
-                  );
+                if (response.statusCode == 200) {
+                  final result = response.body;
+
+                  if (result.startsWith("SUCCESS")) {
+                    if (!mounted) return;
+                    Navigator.pop(context);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("비밀번호가 변경되었습니다. 다시 로그인해주세요."),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  } else {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result.split(":")[1])),
+                    );
+                  }
                 }
+              } catch (e) {
+                print("에러: $e");
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text("변경"),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            child: const Text("변경", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -455,8 +540,19 @@ class _SettingScreenState extends State<SettingScreen> {
                 leading: const Icon(Icons.lock_outline, color: Colors.purple),
                 title: const Text("비밀번호 변경"),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: _showPasswordChangeDialog,
+                onTap: _showPasswordChangedDialog,
               ),
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.person_outline, color: Colors.blue),
+              title: const Text("아이디 변경"),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey,
+              ),
+              onTap: _showIdChangeDialog,
             ),
 
             const SizedBox(height: 30),
@@ -467,19 +563,6 @@ class _SettingScreenState extends State<SettingScreen> {
               color: Colors.white,
               child: Column(
                 children: [
-                  SwitchListTile(
-                    title: const Text("푸시 알림"),
-                    secondary: const Icon(
-                      Icons.notifications_active,
-                      color: Colors.orange,
-                    ),
-                    value: _isNotificationOn,
-                    activeColor: Colors.green,
-                    onChanged: (value) {
-                      setState(() => _isNotificationOn = value);
-                      _saveSetting('noti', value);
-                    },
-                  ),
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.help_outline, color: Colors.blue),
@@ -495,7 +578,6 @@ class _SettingScreenState extends State<SettingScreen> {
                     leading: const Icon(Icons.logout, color: Colors.grey),
                     title: const Text("로그아웃"),
                     onTap: () async {
-                      // 로그아웃 시 SharedPreferences 일부 삭제 (자동로그인 방지)
                       final prefs = await SharedPreferences.getInstance();
                       await prefs.remove('userId');
                       if (!mounted) return;
@@ -507,6 +589,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       );
                     },
                   ),
+
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.person_off, color: Colors.red),
@@ -573,7 +656,6 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // ListView 대신 가벼운 Row를 사용해서 Layout 충돌 방지!
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       title: const Center(
@@ -619,7 +701,6 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
 
             const SizedBox(height: 25),
 
-            //  닉네임 입력창
             TextField(
               controller: _controller,
               decoration: const InputDecoration(

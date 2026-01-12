@@ -1,4 +1,4 @@
-탄소 다이어트 앱(carbon_diet_app)
+탄소 다이어트 앱 (carbon_diet_app)
 
 1. 프로젝트 개요
 

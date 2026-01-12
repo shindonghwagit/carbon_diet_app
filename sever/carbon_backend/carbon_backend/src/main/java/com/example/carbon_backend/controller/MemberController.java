@@ -73,6 +73,7 @@ public class MemberController {
         return "SUCCESS:수정 완료";
     }
 
+    // 비밀번호 변경
     @PutMapping("/api/member/password")
     public String updatePassword(@RequestParam String id, @RequestParam String currentPw, @RequestParam String newPw) {
         // 1. 회원 찾기
@@ -91,5 +92,25 @@ public class MemberController {
         memberRepository.save(member);
 
         return "SUCCESS:비밀번호 변경 완료";
+    }
+
+
+    // 아이디 변경
+    @PutMapping("/api/member/change-id")
+    public String changeId(@RequestParam String currentId, @RequestParam String newId) {
+
+        if (memberRepository.findByUsername(newId).isPresent()) {
+            return "FAIL:이미 존재하는 아이디입니다.";
+        }
+
+        Member member = memberRepository.findByUsername(currentId).orElse(null);
+        if (member == null) {
+            return "FAIL:존재하지 않는 회원";
+        }
+
+        member.setUsername(newId);
+        memberRepository.save(member);
+
+        return "SUCCESS:아이디 변경 완료";
     }
 }

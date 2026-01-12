@@ -6,7 +6,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -19,14 +18,25 @@ public class NewsService {
     @Value("${oauth.client-secret}")
     private String clientSecret;
 
+    private final List<String> ecoImages = Arrays.asList(
+            "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&q=80", // 잎사귀
+            "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=500&q=80", // 자연 풍경
+            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80", // 숲
+            "https://images.unsplash.com/photo-1501854140884-074bf6b243e7?w=500&q=80", // 산
+            "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=500&q=80", // 나뭇잎
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80", // 산과 구름
+            "https://images.unsplash.com/photo-1500829243541-74b677fecc30?w=500&q=80", // 정글
+            "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=500&q=80", // 이슬
+            "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=500&q=80", // 초록 식물
+            "https://images.unsplash.com/photo-1511497584788-876760111969?w=500&q=80"  // 숲길
+    );
 
-    private List<Map<String, String>> cachedNews = new ArrayList<>(); // 뉴스를 저장해둘 공간
+    private List<Map<String, String>> cachedNews = new ArrayList<>();
 
-    // 1시간마다 자동으로 실행됨 (3600000ms = 1시간)
     @Scheduled(fixedRate = 3600000)
     public void fetchNewsFromNaver() {
         System.out.println("뉴스 갱신 시작...");
-        String query = "탄소중립"; // 검색어 (환경, 제로웨이스트 등으로 변경 가능)
+        String query = "탄소중립"; // 검색어
         String apiUrl = "https://openapi.naver.com/v1/search/news.json?query=" + query + "&display=50&sort=sim";
 
         RestTemplate restTemplate = new RestTemplate();
@@ -41,17 +51,30 @@ public class NewsService {
             List<Map<String, Object>> items = (List<Map<String, Object>>) response.getBody().get("items");
 
             List<Map<String, String>> newNewsList = new ArrayList<>();
+            Random random = new Random(); // 랜덤 객체 생성
+
             for (Map<String, Object> item : items) {
                 Map<String, String> news = new HashMap<>();
+
+                // HTML 태그 제거 (<b> 등)
                 String title = Jsoup.parse((String) item.get("title")).text();
-                String desc = Jsoup.parse((String) item.get("description")).text();
+                String desc = "";
+                if (item.get("description") != null) {
+                    desc = Jsoup.parse((String) item.get("description")).text();
+                }
 
                 news.put("title", title);
                 news.put("link", (String) item.get("link"));
                 news.put("date", (String) item.get("pubDate"));
+
+                // 👇 [추가] 이미지와 출처 정보 추가
+                String randomImg = ecoImages.get(random.nextInt(ecoImages.size()));
+                news.put("image", randomImg);      // 프론트엔드에서 보여줄 이미지
+                news.put("source", "네이버 뉴스");   // 출처 표기
+
                 newNewsList.add(news);
             }
-            this.cachedNews = newNewsList; // 저장소 업데이트
+            this.cachedNews = newNewsList;
             System.out.println("뉴스 갱신 완료! 총 " + cachedNews.size() + "개");
 
         } catch (Exception e) {
@@ -59,7 +82,6 @@ public class NewsService {
         }
     }
 
-    // 앱에 보낼 때는 랜덤으로 5개만 뽑아서 줌
     public List<Map<String, String>> getRandomNews() {
         if (cachedNews.isEmpty()) {
             fetchNewsFromNaver();
@@ -68,7 +90,6 @@ public class NewsService {
         List<Map<String, String>> shuffled = new ArrayList<>(cachedNews);
         Collections.shuffle(shuffled);
 
-        // 5개만 잘라서 리턴
         return shuffled.subList(0, Math.min(5, shuffled.size()));
     }
 }
