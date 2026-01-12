@@ -78,40 +78,37 @@
 - 일반: 도움말 확인, 로그아웃, 회원 탈퇴
 
 
+
 ## 📁 디렉토리 구조
 
 ### Frontend (Flutter)
+```
 📦lib
  ┣ 📂screens
  ┃ ┣ 📂auth
- ┃ ┃ ┣ 📜find_account_screen.dart
- ┃ ┃ ┣ 📜login_screen.dart
- ┃ ┃ ┗ 📜signup_screen.dart
- ┃ ┣ 📂main
- ┃ ┃ ┣ 📜home_screen.dart
- ┃ ┃ ┣ 📜news_screen.dart
- ┃ ┃ ┣ 📜setting_screen.dart
+ ┃ ┃ ┣ 📜login_screen.dart (로그인/ID저장)
+ ┃ ┃ ┣ 📜signup_screen.dart (회원가입)
+ ┃ ┃ ┗ 📜find_account_screen.dart
+ ┃ ┗ 📂main
+ ┃ ┃ ┣ 📜main_screen.dart (홈)
+ ┃ ┃ ┣ 📜news_screen.dart (뉴스 리스트/타이머)
+ ┃ ┃ ┣ 📜setting_screen.dart (설정/프로필 수정)
  ┃ ┃ ┗ 📜stat_screen.dart
- ┃ ┣ 📜main_screen.dart
- ┃ ┗ 📜splash_screen.dart
  ┣ 📂widgets
  ┗ 📜main.dart
- 
+```
+
 ## Backend
-📦src
- ┣ 📂main
- ┃ ┣ 📂java
- ┃ ┃ ┗ 📂com.example.carbon_backend
- ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┣ 📜MemberController.java
- ┃ ┃ ┃ ┃ ┗ 📜NewsController.java
- ┃ ┃ ┃ ┣ 📂domain
- ┃ ┃ ┃ ┃ ┗ 📜Member.java
- ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┗ 📜MemberRepository.java
- ┃ ┃ ┃ ┣ 📂service
- ┃ ┃ ┃ ┃ ┣ 📜MemberService.java
- ┃ ┃ ┃ ┃ ┗ 📜NewsService.java
- ┃ ┃ ┃ ┗ 📜CarbonBackendApplication.java
- ┃ ┗ 📂resources
- ┃ ┃ ┗ 📜application.properties
+```
+📦src/main/java/com/example/carbon_backend
+ ┣ 📂controller
+ ┃ ┣ 📜MemberController.java 
+ ┃ ┗ 📜NewsController.java
+ ┣ 📂service
+ ┃ ┣ 📜MemberService.java
+ ┃ ┗ 📜NewsService.java 
+ ┣ 📂repository
+ ┃ ┗ 📜MemberRepository.java
+ ┗ 📂domain
+   ┗ 📜Member.java
+ ```
