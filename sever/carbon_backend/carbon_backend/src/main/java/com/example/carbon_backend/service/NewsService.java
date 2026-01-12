@@ -19,8 +19,6 @@ public class NewsService {
     @Value("${oauth.client-secret}")
     private String clientSecret;
 
-    private final String CLIENT_ID = "8YFu74XJauhbvCQs4fK3";
-    private final String CLIENT_SECRET = "z6M1vQ40lV";
 
     private List<Map<String, String>> cachedNews = new ArrayList<>(); // 뉴스를 저장해둘 공간
 
@@ -33,8 +31,8 @@ public class NewsService {
 
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Naver-Client-Id", CLIENT_ID);
-        headers.set("X-Naver-Client-Secret", CLIENT_SECRET);
+        headers.set("X-Naver-Client-Id", clientId);
+        headers.set("X-Naver-Client-Secret", clientSecret);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 

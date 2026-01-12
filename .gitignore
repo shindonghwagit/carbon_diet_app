@@ -4,6 +4,10 @@
 !.env.example
 .env.properties
 
+# Spring Boot Secrets 
+application-secret.properties
+src/main/resources/application-secret.properties
+
 # IDE
 .idea/
 .vscode/
