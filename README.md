@@ -86,29 +86,50 @@
 📦lib
  ┣ 📂screens
  ┃ ┣ 📂auth
- ┃ ┃ ┣ 📜login_screen.dart (로그인/ID저장)
- ┃ ┃ ┣ 📜signup_screen.dart (회원가입)
- ┃ ┃ ┗ 📜find_account_screen.dart
- ┃ ┗ 📂main
- ┃ ┃ ┣ 📜main_screen.dart (홈)
- ┃ ┃ ┣ 📜news_screen.dart (뉴스 리스트/타이머)
- ┃ ┃ ┣ 📜setting_screen.dart (설정/프로필 수정)
+ ┃ ┃ ┣ 📜find_account_screen.dart
+ ┃ ┃ ┣ 📜login_screen.dart
+ ┃ ┃ ┗ 📜signup_screen.dart
+ ┃ ┣ 📂main
+ ┃ ┃ ┣ 📜home_screen.dart
+ ┃ ┃ ┣ 📜news_screen.dart
+ ┃ ┃ ┣ 📜setting_screen.dart
  ┃ ┃ ┗ 📜stat_screen.dart
+ ┃ ┣ 📜main_screen.dart
+ ┃ ┗ 📜splash_screen.dart
  ┣ 📂widgets
+ ┃ ┗ 📂inputs
+ ┃ ┃ ┣ 📜elec_input.dart
+ ┃ ┃ ┣ 📜food_input.dart
+ ┃ ┃ ┣ 📜record_bottom_sheets.dart
+ ┃ ┃ ┗ 📜trains_input.dart
  ┗ 📜main.dart
 ```
 
 ## Backend
 ```
-📦src/main/java/com/example/carbon_backend
- ┣ 📂controller
- ┃ ┣ 📜MemberController.java 
- ┃ ┗ 📜NewsController.java
- ┣ 📂service
- ┃ ┣ 📜MemberService.java
- ┃ ┗ 📜NewsService.java 
- ┣ 📂repository
- ┃ ┗ 📜MemberRepository.java
- ┗ 📂domain
-   ┗ 📜Member.java
+📦src
+ ┣ 📂main
+ ┃ ┣ 📂java
+ ┃ ┃ ┗ 📂com.example.carbon_backend
+ ┃ ┃ ┃ ┣ 📂controller
+ ┃ ┃ ┃ ┃ ┣ 📜CarbonController.java
+ ┃ ┃ ┃ ┃ ┣ 📜MemberController.java
+ ┃ ┃ ┃ ┃ ┗ 📜NewsController.java
+ ┃ ┃ ┃ ┣ 📂domain
+ ┃ ┃ ┃ ┃ ┣ 📜CarbonLog.java
+ ┃ ┃ ┃ ┃ ┣ 📜Member.java
+ ┃ ┃ ┃ ┃ ┗ 📜UsageResult.java
+ ┃ ┃ ┃ ┣ 📂repository
+ ┃ ┃ ┃ ┃ ┣ 📜CarbonLogRepository.java
+ ┃ ┃ ┃ ┃ ┣ 📜MemberRepository.java
+ ┃ ┃ ┃ ┃ ┗ 📜UsageRepository.java
+ ┃ ┃ ┃ ┣ 📂service
+ ┃ ┃ ┃ ┃ ┣ 📜CarbonService.java
+ ┃ ┃ ┃ ┃ ┣ 📜MemberService.java
+ ┃ ┃ ┃ ┃ ┣ 📜NewsService.java
+ ┃ ┃ ┃ ┃ ┗ 📜PasswordEncoder.java
+ ┃ ┃ ┃ ┗ 📜CarbonBackendApplication.java
+ ┃ ┗ 📂resources
+ ┃ ┃ ┣ 📜application-secret.properties
+ ┃ ┃ ┗ 📜application.properties
  ```
