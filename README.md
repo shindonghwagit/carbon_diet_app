@@ -107,29 +107,15 @@
 
 ## Backend
 ```
-📦src
- ┣ 📂main
- ┃ ┣ 📂java
- ┃ ┃ ┗ 📂com.example.carbon_backend
- ┃ ┃ ┃ ┣ 📂controller
- ┃ ┃ ┃ ┃ ┣ 📜CarbonController.java
- ┃ ┃ ┃ ┃ ┣ 📜MemberController.java
- ┃ ┃ ┃ ┃ ┗ 📜NewsController.java
- ┃ ┃ ┃ ┣ 📂domain
- ┃ ┃ ┃ ┃ ┣ 📜CarbonLog.java
- ┃ ┃ ┃ ┃ ┣ 📜Member.java
- ┃ ┃ ┃ ┃ ┗ 📜UsageResult.java
- ┃ ┃ ┃ ┣ 📂repository
- ┃ ┃ ┃ ┃ ┣ 📜CarbonLogRepository.java
- ┃ ┃ ┃ ┃ ┣ 📜MemberRepository.java
- ┃ ┃ ┃ ┃ ┗ 📜UsageRepository.java
- ┃ ┃ ┃ ┣ 📂service
- ┃ ┃ ┃ ┃ ┣ 📜CarbonService.java
- ┃ ┃ ┃ ┃ ┣ 📜MemberService.java
- ┃ ┃ ┃ ┃ ┣ 📜NewsService.java
- ┃ ┃ ┃ ┃ ┗ 📜PasswordEncoder.java
- ┃ ┃ ┃ ┗ 📜CarbonBackendApplication.java
- ┃ ┗ 📂resources
- ┃ ┃ ┣ 📜application-secret.properties
- ┃ ┃ ┗ 📜application.properties
+📦src/main/java/com/example/carbon_backend
+ ┣ 📂controller
+ ┃ ┣ 📜MemberController.java 
+ ┃ ┗ 📜NewsController.java
+ ┣ 📂service
+ ┃ ┣ 📜MemberService.java
+ ┃ ┗ 📜NewsService.java 
+ ┣ 📂repository
+ ┃ ┗ 📜MemberRepository.java
+ ┗ 📂domain
+   ┗ 📜Member.java
  ```
