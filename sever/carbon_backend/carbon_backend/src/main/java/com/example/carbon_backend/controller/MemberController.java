@@ -1,12 +1,17 @@
 package com.example.carbon_backend.controller;
 
+import com.example.carbon_backend.domain.CarbonLog;
 import com.example.carbon_backend.domain.Member;
+import com.example.carbon_backend.repository.CarbonLogRepository;
 import com.example.carbon_backend.repository.MemberRepository;
 import com.example.carbon_backend.service.MemberService;
 import com.example.carbon_backend.service.PasswordEncoder;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin("*")
 @RestController
@@ -14,8 +19,9 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
-
     private final MemberRepository memberRepository;
+
+    private final CarbonLogRepository carbonLogRepository;
 
     @PostMapping("/api/register")
     public String register(
@@ -30,17 +36,25 @@ public class MemberController {
     }
 
     // 로그인
+    @Transactional
     @PostMapping("/api/login")
     public String login(@RequestParam String id, @RequestParam String pw) {
         return memberService.login(id, pw);
     }
 
-    @DeleteMapping("/{username}")
-    public ResponseEntity<String> deleteUser(@PathVariable String username) {
+    @DeleteMapping("/api/reset")
+    public String deleteUser(@RequestParam String username) {
 
-        memberService.deleteMember(username);
+        List<CarbonLog> myLogs = carbonLogRepository.findAllByUsername(username);
+        carbonLogRepository.deleteAll(myLogs);
 
-        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+        Member member = memberRepository.findByUsername(username).orElse(null);
+        if (member != null) {
+            memberRepository.delete(member);
+            return "SUCCESS:회원 탈퇴 완료";
+        } else {
+            return "FAIL:존재하지 않는 회원";
+        }
     }
 
     @GetMapping("/api/member/find-id")
@@ -59,15 +73,28 @@ public class MemberController {
                 .orElse("일치하는 회원 정보가 없습니다.");
     }
 
-    // 비밀번호 변경
+
     @PutMapping("/api/member/update")
-    public String updateMember(@RequestParam String id, @RequestParam String name) {
-        // 1. 아이디로 유저 찾기
+    public String updateMember(
+            @RequestParam String id,
+            @RequestParam String name,
+
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) String birthDate
+    ) {
         Member member = memberRepository.findByUsername(id).orElse(null);
         if (member == null) return "FAIL:존재하지 않는 회원";
 
-        // 2. 닉네임 변경 및 저장
+        // 닉네임 변경
         member.setName(name);
+
+        //  값이 들어왔을 때만 변경 (null이 아닐 때)
+        if (email != null && !email.isEmpty()) member.setEmail(email);
+        if (gender != null && !gender.isEmpty()) member.setGender(gender);
+        if (birthDate != null && !birthDate.isEmpty()) member.setBirthDate(birthDate);
+
+        // 변경 사항 DB에 저장
         memberRepository.save(member);
 
         return "SUCCESS:수정 완료";
@@ -96,6 +123,7 @@ public class MemberController {
 
 
     // 아이디 변경
+    @Transactional
     @PutMapping("/api/member/change-id")
     public String changeId(@RequestParam String currentId, @RequestParam String newId) {
 
@@ -104,9 +132,9 @@ public class MemberController {
         }
 
         Member member = memberRepository.findByUsername(currentId).orElse(null);
-        if (member == null) {
-            return "FAIL:존재하지 않는 회원";
-        }
+        if (member == null) return "FAIL:존재하지 않는 회원";
+
+        carbonLogRepository.updateUsername(currentId, newId);
 
         member.setUsername(newId);
         memberRepository.save(member);

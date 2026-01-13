@@ -54,6 +54,7 @@ class _SettingScreenState extends State<SettingScreen> {
         currentNickname: _nickname,
         currentAvatarIndex: _avatarIndex,
         avatars: _avatars,
+        userId: _userId, // 👇 아이디도 넘겨줘야 함
       ),
     );
 
@@ -61,14 +62,24 @@ class _SettingScreenState extends State<SettingScreen> {
       String newNickname = result['nickname'];
       int newAvatar = result['avatarIndex'];
 
-      bool success = await _updateMemberInfo(_userId, newNickname);
+      String email = result['email'] ?? "";
+      String birth = result['birthDate'] ?? "";
+      String gender = result['gender'] ?? "";
+
+      // API 호출 (인자 추가)
+      bool success = await _updateMemberInfo(
+        _userId,
+        newNickname,
+        email,
+        birth,
+        gender,
+      );
 
       if (success) {
         setState(() {
           _nickname = newNickname;
           _avatarIndex = newAvatar;
         });
-
         _saveSetting('nickname', _nickname);
         _saveSetting('avatarIndex', _avatarIndex);
 
@@ -78,15 +89,22 @@ class _SettingScreenState extends State<SettingScreen> {
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text("서버 저장 실패! 다시 시도해주세요.")));
+        ).showSnackBar(const SnackBar(content: Text("서버 저장 실패!")));
       }
     }
   }
 
-  Future<bool> _updateMemberInfo(String id, String newName) async {
+  Future<bool> _updateMemberInfo(
+    String id,
+    String newName,
+    String email,
+    String birth,
+    String gender,
+  ) async {
     final url = Uri.parse(
-      "http://10.0.2.2:8080/api/member/update?id=$id&name=$newName",
+      "http://10.0.2.2:8080/api/member/update?id=$id&name=$newName&email=$email&birthDate=$birth&gender=$gender",
     );
+
     try {
       final response = await http.put(url);
       if (response.statusCode == 200) {
@@ -625,12 +643,14 @@ class ProfileEditDialog extends StatefulWidget {
   final String currentNickname;
   final int currentAvatarIndex;
   final List<String> avatars;
+  final String userId;
 
   const ProfileEditDialog({
     super.key,
     required this.currentNickname,
     required this.currentAvatarIndex,
     required this.avatars,
+    required this.userId,
   });
 
   @override
@@ -638,19 +658,27 @@ class ProfileEditDialog extends StatefulWidget {
 }
 
 class _ProfileEditDialogState extends State<ProfileEditDialog> {
-  late TextEditingController _controller;
+  late TextEditingController _nickController;
+  late TextEditingController _emailController;
+  late TextEditingController _birthController;
+
   late int _tempAvatarIndex;
+  String _selectedGender = "M"; // 기본값 남자
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.currentNickname);
+    _nickController = TextEditingController(text: widget.currentNickname);
+    _emailController = TextEditingController();
+    _birthController = TextEditingController();
     _tempAvatarIndex = widget.currentAvatarIndex;
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _nickController.dispose();
+    _emailController.dispose();
+    _birthController.dispose();
     super.dispose();
   }
 
@@ -661,60 +689,89 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
       title: const Center(
         child: Text("프로필 수정", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 10),
 
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(widget.avatars.length, (index) {
-                  bool isSelected = _tempAvatarIndex == index;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _tempAvatarIndex = index);
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.green.withOpacity(0.2)
-                            : Colors.transparent,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(color: Colors.green, width: 2)
-                            : Border.all(color: Colors.transparent, width: 2),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: List.generate(widget.avatars.length, (index) {
+                    bool isSelected = _tempAvatarIndex == index;
+                    return GestureDetector(
+                      onTap: () => setState(() => _tempAvatarIndex = index),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.green.withOpacity(0.2)
+                              : null,
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: Colors.green, width: 2)
+                              : null,
+                        ),
+                        child: Text(
+                          widget.avatars[index],
+                          style: const TextStyle(fontSize: 30),
+                        ),
                       ),
-                      child: Text(
-                        widget.avatars[index],
-                        style: const TextStyle(fontSize: 34),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-
-            const SizedBox(height: 25),
-
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                labelText: "닉네임",
-                hintText: "닉네임을 입력하세요",
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 15,
+                    );
+                  }),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+
+              // 2. 닉네임
+              TextField(
+                controller: _nickController,
+                decoration: const InputDecoration(
+                  labelText: "닉네임",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // 3. 이메일 (선택)
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: "이메일 변경 (선택)",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // 4. 생년월일 (선택)
+              TextField(
+                controller: _birthController,
+                decoration: const InputDecoration(
+                  labelText: "생년월일 (예: 19990101)",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 10),
+
+              // 5. 성별 선택
+              DropdownButtonFormField<String>(
+                value: _selectedGender,
+                items: const [
+                  DropdownMenuItem(value: "M", child: Text("남성")),
+                  DropdownMenuItem(value: "F", child: Text("여성")),
+                ],
+                onChanged: (val) => setState(() => _selectedGender = val!),
+                decoration: const InputDecoration(
+                  labelText: "성별",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -724,20 +781,17 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            // 저장 버튼
+            // 입력값들을 묶어서 부모에게 전달
             Navigator.pop(context, {
-              'nickname': _controller.text,
+              'nickname': _nickController.text,
               'avatarIndex': _tempAvatarIndex,
+              'email': _emailController.text,
+              'birthDate': _birthController.text,
+              'gender': _selectedGender,
             });
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-          child: const Text("저장"),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          child: const Text("저장", style: TextStyle(color: Colors.white)),
         ),
       ],
     );

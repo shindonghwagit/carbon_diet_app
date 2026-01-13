@@ -1,10 +1,10 @@
 package com.example.carbon_backend.service;
 
 import com.example.carbon_backend.domain.Member;
-// import com.example.carbon_backend.domain.UsageResult; // 👈 이거 지우세요 (안 씀)
+// import com.example.carbon_backend.domain.UsageResult;
 import com.example.carbon_backend.repository.CarbonLogRepository;
 import com.example.carbon_backend.repository.MemberRepository;
-import com.example.carbon_backend.repository.UsageRepository; // 👈 이거 import 필수!
+import com.example.carbon_backend.repository.UsageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class MemberService {
 
     @Transactional
     public void deleteMember(String username) {
-        carbonLogRepository.deleteByUsername(username);
+        carbonLogRepository.deleteAllByUsername(username);
         usageRepository.deleteByUsername(username);
         memberRepository.deleteById(username);
     }

@@ -3,9 +3,11 @@ package com.example.carbon_backend.domain;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Data
+@Setter
 @NoArgsConstructor
 public class Member {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -18,7 +18,7 @@ public class CarbonLog {
     private double inputAmount;   // 입력값 (km, 인분, 원)
     private double carbonEmitted; // 탄소 배출량 (kg)
 
-    private String username;      // 👈 [추가됨] 사용자 아이디
+    private String username;
 
     private LocalDateTime createdAt;
 
@@ -31,8 +31,11 @@ public class CarbonLog {
         this.createdAt = LocalDateTime.now();
     }
 
-    // CarbonLog 클래스 안에 이 함수 하나만 추가하세요!
     public void setCreatedAt(LocalDateTime date) {
         this.createdAt = date;
+    }
+
+    public void setUsername(String newId) {
+        this.username = username;
     }
 }

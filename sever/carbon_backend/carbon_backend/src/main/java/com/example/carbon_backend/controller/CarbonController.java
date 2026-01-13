@@ -41,11 +41,4 @@ public class CarbonController {
     public List<CarbonLog> getLogs(@RequestParam String username) {
         return carbonService.getLogsByUsername(username);
     }
-
-    // 초기화 기능
-    @DeleteMapping("/api/reset")
-    public String resetData() {
-        carbonService.deleteAllLogs();
-        return "모든 데이터가 삭제되었습니다.";
-    }
 }
