@@ -19,16 +19,16 @@ public class NewsService {
     private String clientSecret;
 
     private final List<String> ecoImages = Arrays.asList(
-            "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&q=80", // 잎사귀
-            "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=500&q=80", // 자연 풍경
-            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80", // 숲
-            "https://images.unsplash.com/photo-1501854140884-074bf6b243e7?w=500&q=80", // 산
-            "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=500&q=80", // 나뭇잎
-            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80", // 산과 구름
-            "https://images.unsplash.com/photo-1500829243541-74b677fecc30?w=500&q=80", // 정글
-            "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=500&q=80", // 이슬
-            "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=500&q=80", // 초록 식물
-            "https://images.unsplash.com/photo-1511497584788-876760111969?w=500&q=80"  // 숲길
+            "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&q=80",
+            "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=500&q=80",
+            "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=500&q=80",
+            "https://images.unsplash.com/photo-1501854140884-074bf6b243e7?w=500&q=80",
+            "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=500&q=80",
+            "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80",
+            "https://images.unsplash.com/photo-1500829243541-74b677fecc30?w=500&q=80",
+            "https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=500&q=80",
+            "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=500&q=80",
+            "https://images.unsplash.com/photo-1511497584788-876760111969?w=500&q=80"
     );
 
     private List<Map<String, String>> cachedNews = new ArrayList<>();
@@ -56,7 +56,6 @@ public class NewsService {
             for (Map<String, Object> item : items) {
                 Map<String, String> news = new HashMap<>();
 
-                // HTML 태그 제거 (<b> 등)
                 String title = Jsoup.parse((String) item.get("title")).text();
                 String desc = "";
                 if (item.get("description") != null) {
@@ -67,7 +66,6 @@ public class NewsService {
                 news.put("link", (String) item.get("link"));
                 news.put("date", (String) item.get("pubDate"));
 
-                // 👇 [추가] 이미지와 출처 정보 추가
                 String randomImg = ecoImages.get(random.nextInt(ecoImages.size()));
                 news.put("image", randomImg);      // 프론트엔드에서 보여줄 이미지
                 news.put("source", "네이버 뉴스");   // 출처 표기
