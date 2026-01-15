@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 .env.properties
+**/google-services.json
+**/serviceAccountKey.json
+**/secrets.dart
 
 # Spring Boot Secrets 
 application-secret.properties
