@@ -43,6 +43,12 @@ dependencies:
   shared_preferences: ^2.5.4
   google_mlkit_text_recognition: ^0.13.0
   image_picker: ^1.1.2
+  kakao_flutter_sdk_user: ^1.9.0
+  flutter_naver_login: ^2.1.1
+  google_sign_in: ^6.1.6
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.9
+  flutter_local_notifications: ^17.0.0
 
 dev_dependencies:
   flutter_test:

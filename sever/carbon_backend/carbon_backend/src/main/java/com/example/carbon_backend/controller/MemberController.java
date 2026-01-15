@@ -141,4 +141,25 @@ public class MemberController {
 
         return "SUCCESS:아이디 변경 완료";
     }
+
+    @PostMapping("/api/fcm-token")
+    public String updateFcmToken(@RequestParam String id, @RequestParam String token) {
+        try {
+            // 1. 아이디로 회원 찾기
+            Member member = memberRepository.findByUsername(id).orElse(null);
+
+            if (member != null) {
+                // 2. 토큰 저장
+                member.setFcmToken(token);
+                memberRepository.save(member);
+                System.out.println("FCM 토큰 저장 완료: " + id);
+                return "SUCCESS";
+            } else {
+                return "FAIL: Member not found";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "FAIL: Error";
+        }
+    }
 }

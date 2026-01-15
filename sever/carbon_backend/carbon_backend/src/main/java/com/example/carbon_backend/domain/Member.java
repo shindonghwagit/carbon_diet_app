@@ -30,4 +30,15 @@ public class Member {
         this.gender = gender;
         this.birthDate = birthDate;
     }
+
+    @Column(length = 500)
+    private String fcmToken;
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 }
